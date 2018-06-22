@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use winapi::um::winnt::ACE_HEADER;
+use winapi::um::winnt::{self, ACE_HEADER};
 
 pub struct AccessControlEntryPtr<'a> {
     ace: AcePtr,
@@ -8,13 +8,23 @@ pub struct AccessControlEntryPtr<'a> {
 }
 
 enum AcePtr {
+    AccessAllowed(*const winnt::ACCESS_ALLOWED_ACE),
     Unknown(*const ACE_HEADER),
 }
 
 impl<'a> AccessControlEntryPtr<'a> {
     pub unsafe fn new(ace_ptr: *const ACE_HEADER) -> Self {
+        use self::AcePtr::*;
+
+        let ace = match (*ace_ptr).AceType {
+            winnt::ACCESS_ALLOWED_ACE_TYPE => {
+                AccessAllowed(ace_ptr as *const winnt::ACCESS_ALLOWED_ACE)
+            }
+            _ => Unknown(ace_ptr),
+        };
+
         AccessControlEntryPtr {
-            ace: AcePtr::Unknown(ace_ptr),
+            ace,
             _ptr_lifetime: PhantomData,
         }
     }
@@ -22,8 +32,13 @@ impl<'a> AccessControlEntryPtr<'a> {
     pub fn size(&self) -> usize {
         use self::AcePtr::*;
 
-        match self.ace {
-            Unknown(ace_header) => unsafe { (*ace_header).AceSize as usize },
+        unsafe {
+            let header = match self.ace {
+                AccessAllowed(ace) => &(*ace).Header,
+                Unknown(ace_header) => &(*ace_header),
+            };
+
+            header.AceSize as usize
         }
     }
 }
