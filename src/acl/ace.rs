@@ -18,4 +18,12 @@ impl<'a> AccessControlEntryPtr<'a> {
             _ptr_lifetime: PhantomData,
         }
     }
+
+    pub fn size(&self) -> usize {
+        use self::AcePtr::*;
+
+        match self.ace {
+            Unknown(ace_header) => unsafe { (*ace_header).AceSize as usize },
+        }
+    }
 }
