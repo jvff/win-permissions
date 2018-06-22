@@ -9,6 +9,7 @@ pub struct AccessControlEntryPtr<'a> {
 
 enum AcePtr {
     AccessAllowed(*const winnt::ACCESS_ALLOWED_ACE),
+    AccessAllowedCallback(*const winnt::ACCESS_ALLOWED_CALLBACK_ACE),
     Unknown(*const ACE_HEADER),
 }
 
@@ -19,6 +20,9 @@ impl<'a> AccessControlEntryPtr<'a> {
         let ace = match (*ace_ptr).AceType {
             winnt::ACCESS_ALLOWED_ACE_TYPE => {
                 AccessAllowed(ace_ptr as *const winnt::ACCESS_ALLOWED_ACE)
+            }
+            winnt::ACCESS_ALLOWED_CALLBACK_ACE_TYPE => {
+                AccessAllowedCallback(ace_ptr as *const winnt::ACCESS_ALLOWED_CALLBACK_ACE)
             }
             _ => Unknown(ace_ptr),
         };
@@ -33,7 +37,7 @@ impl<'a> AccessControlEntryPtr<'a> {
         use self::AcePtr::*;
 
         match self.ace {
-            AccessAllowed(_) => Some(true),
+            AccessAllowed(_) | AccessAllowedCallback(_) => Some(true),
             Unknown(_) => None,
         }
     }
@@ -44,6 +48,7 @@ impl<'a> AccessControlEntryPtr<'a> {
         unsafe {
             let header = match self.ace {
                 AccessAllowed(ace) => &(*ace).Header,
+                AccessAllowedCallback(ace) => &(*ace).Header,
                 Unknown(ace_header) => &(*ace_header),
             };
 
