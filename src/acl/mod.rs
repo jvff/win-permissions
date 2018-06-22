@@ -27,6 +27,16 @@ impl<'a> AccessControlListPtr<'a> {
             (*acl).AceCount as usize
         }
     }
+
+    pub fn entries<'b>(&'b self) -> AccessControlEntries<'b> {
+        unsafe {
+            let acl_ptr = self.acl as *const ACL;
+            let acl = slice::from_raw_parts(acl_ptr, 2);
+            let first_entry_ptr = acl[2..].as_ptr() as PACE_HEADER;
+
+            AccessControlEntries::new(first_entry_ptr, self.num_entries())
+        }
+    }
 }
 
 pub struct AccessControlEntries<'a> {
