@@ -1,6 +1,10 @@
+mod ace;
+
 use std::marker::PhantomData;
 
 use winapi::um::winnt::{ACL, PACL};
+
+pub use self::ace::AccessControlEntryPtr;
 
 pub struct AccessControlListPtr<'a> {
     acl: PACL,
