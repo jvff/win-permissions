@@ -29,6 +29,15 @@ impl<'a> AccessControlEntryPtr<'a> {
         }
     }
 
+    pub fn grants_access(&self) -> Option<bool> {
+        use self::AcePtr::*;
+
+        match self.ace {
+            AccessAllowed(_) => Some(true),
+            Unknown(_) => None,
+        }
+    }
+
     pub fn size(&self) -> usize {
         use self::AcePtr::*;
 
