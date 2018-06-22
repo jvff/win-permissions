@@ -4,8 +4,9 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use winapi::shared::sddl::ConvertSidToStringSidA;
+use winapi::um::securitybaseapi::IsWellKnownSid;
 use winapi::um::winbase::LocalFree;
-use winapi::um::winnt::PSID;
+use winapi::um::winnt::{PSID, WELL_KNOWN_SID_TYPE};
 
 pub struct SecurityIdPtr<'a> {
     sid: PSID,
@@ -18,6 +19,10 @@ impl<'a> SecurityIdPtr<'a> {
             sid,
             _ptr_lifetime: PhantomData,
         }
+    }
+
+    pub fn is_well_known(&self, well_known_sid_type: WELL_KNOWN_SID_TYPE) -> bool {
+        unsafe { IsWellKnownSid(self.sid, well_known_sid_type) != 0 }
     }
 }
 
