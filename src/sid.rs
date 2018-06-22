@@ -6,7 +6,7 @@ use std::ptr;
 use winapi::shared::sddl::ConvertSidToStringSidA;
 use winapi::um::securitybaseapi::IsWellKnownSid;
 use winapi::um::winbase::LocalFree;
-use winapi::um::winnt::{PSID, WELL_KNOWN_SID_TYPE};
+use winapi::um::winnt::{self, PSID, WELL_KNOWN_SID_TYPE};
 
 pub struct SecurityIdPtr<'a> {
     sid: PSID,
@@ -19,6 +19,10 @@ impl<'a> SecurityIdPtr<'a> {
             sid,
             _ptr_lifetime: PhantomData,
         }
+    }
+
+    pub fn is_builtin_administrators(&self) -> bool {
+        self.is_well_known(winnt::WinBuiltinAdministratorsSid)
     }
 
     pub fn is_well_known(&self, well_known_sid_type: WELL_KNOWN_SID_TYPE) -> bool {
