@@ -1,7 +1,7 @@
 use winapi::um::winbase::LocalFree;
 use winapi::um::winnt::{PSECURITY_DESCRIPTOR, SECURITY_DESCRIPTOR};
 
-use super::SecurityIdPtr;
+use super::{AccessControlListPtr, SecurityIdPtr};
 
 pub struct SecurityDescriptor {
     security_descriptor: PSECURITY_DESCRIPTOR,
@@ -23,6 +23,19 @@ impl SecurityDescriptor {
                 None
             } else {
                 Some(SecurityIdPtr::new(owner))
+            }
+        }
+    }
+
+    pub fn dacl<'a>(&'a self) -> Option<AccessControlListPtr<'a>> {
+        unsafe {
+            let security_descriptor = self.security_descriptor as *const SECURITY_DESCRIPTOR;
+            let dacl = (*security_descriptor).Dacl;
+
+            if dacl.is_null() {
+                None
+            } else {
+                Some(AccessControlListPtr::new(dacl))
             }
         }
     }
