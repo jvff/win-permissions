@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use winapi::um::winnt::PACL;
+use winapi::um::winnt::{ACL, PACL};
 
 pub struct AccessControlListPtr<'a> {
     acl: PACL,
@@ -12,6 +12,14 @@ impl<'a> AccessControlListPtr<'a> {
         AccessControlListPtr {
             acl,
             _ptr_lifetime: PhantomData,
+        }
+    }
+
+    pub fn num_entries(&self) -> usize {
+        unsafe {
+            let acl = self.acl as *const ACL;
+
+            (*acl).AceCount as usize
         }
     }
 }
