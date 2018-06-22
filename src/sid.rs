@@ -25,6 +25,10 @@ impl<'a> SecurityIdPtr<'a> {
         self.is_well_known(winnt::WinBuiltinAdministratorsSid)
     }
 
+    pub fn is_local_system(&self) -> bool {
+        self.is_well_known(winnt::WinLocalSystemSid)
+    }
+
     pub fn is_well_known(&self, well_known_sid_type: WELL_KNOWN_SID_TYPE) -> bool {
         unsafe { IsWellKnownSid(self.sid, well_known_sid_type) != 0 }
     }
