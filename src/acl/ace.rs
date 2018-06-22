@@ -13,6 +13,7 @@ enum AcePtr {
     AccessAllowedCallbackObject(*const winnt::ACCESS_ALLOWED_CALLBACK_OBJECT_ACE),
     AccessAllowedObject(*const winnt::ACCESS_ALLOWED_OBJECT_ACE),
     AccessDenied(*const winnt::ACCESS_DENIED_ACE),
+    AccessDeniedCallback(*const winnt::ACCESS_DENIED_CALLBACK_ACE),
     Unknown(*const ACE_HEADER),
 }
 
@@ -36,6 +37,9 @@ impl<'a> AccessControlEntryPtr<'a> {
             winnt::ACCESS_DENIED_ACE_TYPE => {
                 AccessDenied(ace_ptr as *const winnt::ACCESS_DENIED_ACE)
             }
+            winnt::ACCESS_DENIED_CALLBACK_ACE_TYPE => {
+                AccessDeniedCallback(ace_ptr as *const winnt::ACCESS_DENIED_CALLBACK_ACE)
+            }
             _ => Unknown(ace_ptr),
         };
 
@@ -53,7 +57,7 @@ impl<'a> AccessControlEntryPtr<'a> {
             | AccessAllowedCallback(_)
             | AccessAllowedCallbackObject(_)
             | AccessAllowedObject(_) => Some(true),
-            AccessDenied(_) => Some(false),
+            AccessDenied(_) | AccessDeniedCallback(_) => Some(false),
             Unknown(_) => None,
         }
     }
@@ -68,6 +72,7 @@ impl<'a> AccessControlEntryPtr<'a> {
                 AccessAllowedCallbackObject(ace) => &(*ace).Header,
                 AccessAllowedObject(ace) => &(*ace).Header,
                 AccessDenied(ace) => &(*ace).Header,
+                AccessDeniedCallback(ace) => &(*ace).Header,
                 Unknown(ace_header) => &(*ace_header),
             };
 
