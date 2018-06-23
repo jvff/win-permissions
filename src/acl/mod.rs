@@ -98,3 +98,9 @@ impl<'a> AccessControlListPtrMut<'a> {
         }
     }
 }
+
+impl<'a> AsRef<AccessControlListPtr<'a>> for AccessControlListPtrMut<'a> {
+    fn as_ref(&self) -> &AccessControlListPtr<'a> {
+        &self.acl
+    }
+}
