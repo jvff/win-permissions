@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use winapi::um::winnt::{self, ACE_HEADER};
+use winapi::shared::minwindef::DWORD;
+use winapi::um::winnt::{self, ACE_HEADER, PSID};
+
+use super::super::SecurityIdPtr;
 
 pub struct AccessControlEntryPtr<'a> {
     ace: AcePtr,
@@ -70,6 +73,26 @@ impl<'a> AccessControlEntryPtr<'a> {
             | AccessDeniedCallbackObject(_)
             | AccessDeniedObject(_) => Some(false),
             Unknown(_) => None,
+        }
+    }
+
+    pub fn trustee<'b>(&'b self) -> Option<SecurityIdPtr<'b>> {
+        use self::AcePtr::*;
+
+        unsafe {
+            let sid_start: *const DWORD = match self.ace {
+                AccessAllowed(ace) => &(*ace).SidStart,
+                AccessAllowedCallback(ace) => &(*ace).SidStart,
+                AccessAllowedCallbackObject(ace) => &(*ace).SidStart,
+                AccessAllowedObject(ace) => &(*ace).SidStart,
+                AccessDenied(ace) => &(*ace).SidStart,
+                AccessDeniedCallback(ace) => &(*ace).SidStart,
+                AccessDeniedCallbackObject(ace) => &(*ace).SidStart,
+                AccessDeniedObject(ace) => &(*ace).SidStart,
+                Unknown(_) => return None,
+            };
+
+            Some(SecurityIdPtr::new(sid_start as PSID))
         }
     }
 
