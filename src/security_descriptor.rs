@@ -1,5 +1,5 @@
 use winapi::um::winbase::LocalFree;
-use winapi::um::winnt::{PSECURITY_DESCRIPTOR, SECURITY_DESCRIPTOR};
+use winapi::um::winnt::{PSECURITY_DESCRIPTOR, SECURITY_DESCRIPTOR, SE_DACL_PROTECTED};
 
 use super::{AccessControlListPtr, SecurityIdPtr};
 
@@ -37,6 +37,14 @@ impl SecurityDescriptor {
             } else {
                 Some(AccessControlListPtr::new(dacl))
             }
+        }
+    }
+
+    pub fn is_dacl_protected(&self) -> bool {
+        unsafe {
+            let security_descriptor = self.security_descriptor as *const SECURITY_DESCRIPTOR;
+
+            (*security_descriptor).Control & SE_DACL_PROTECTED != 0
         }
     }
 }
