@@ -7,4 +7,5 @@ license = "GPL-3.0"
 
 [dependencies]
 bitflags = "1.0"
-winapi = { version = "0.3", features = ["securitybaseapi", "sddl", "winbase", "winnt"] }
+failure = { version = "0.1", features = ["derive"] }
+winapi = { version = "0.3", features = ["accctrl", "aclapi", "securitybaseapi", "sddl", "winbase", "winerror", "winnt"] }
