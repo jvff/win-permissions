@@ -76,6 +76,26 @@ impl<'a> AccessControlEntryPtr<'a> {
         }
     }
 
+    pub fn access_mask(&self) -> Option<AccessMask> {
+        use self::AcePtr::*;
+
+        unsafe {
+            let raw_access_mask = match self.ace {
+                AccessAllowed(ace) => (*ace).Mask,
+                AccessAllowedCallback(ace) => (*ace).Mask,
+                AccessAllowedCallbackObject(ace) => (*ace).Mask,
+                AccessAllowedObject(ace) => (*ace).Mask,
+                AccessDenied(ace) => (*ace).Mask,
+                AccessDeniedCallback(ace) => (*ace).Mask,
+                AccessDeniedCallbackObject(ace) => (*ace).Mask,
+                AccessDeniedObject(ace) => (*ace).Mask,
+                Unknown(_) => return None,
+            };
+
+            Some(AccessMask::from_bits_truncate(raw_access_mask))
+        }
+    }
+
     pub fn grants_access(&self) -> Option<bool> {
         use self::AcePtr::*;
 
