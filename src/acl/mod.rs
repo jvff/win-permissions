@@ -37,6 +37,10 @@ impl<'a> AccessControlListPtr<'a> {
             AccessControlEntries::new(first_entry_ptr, self.num_entries())
         }
     }
+
+    pub unsafe fn as_ptr(&self) -> PACL {
+        self.acl
+    }
 }
 
 pub struct AccessControlEntries<'a> {
