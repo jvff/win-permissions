@@ -2,6 +2,7 @@ mod ace;
 
 use std::borrow::Borrow;
 use std::marker::PhantomData;
+use std::ops::Deref;
 use std::slice;
 
 use winapi::um::winnt::{ACE_HEADER, ACL, PACE_HEADER, PACL};
@@ -108,6 +109,14 @@ impl<'a> AsRef<AccessControlListPtr<'a>> for AccessControlListPtrMut<'a> {
 
 impl<'a> Borrow<AccessControlListPtr<'a>> for AccessControlListPtrMut<'a> {
     fn borrow(&self) -> &AccessControlListPtr<'a> {
+        &self.acl
+    }
+}
+
+impl<'a> Deref for AccessControlListPtrMut<'a> {
+    type Target = AccessControlListPtr<'a>;
+
+    fn deref(&self) -> &Self::Target {
         &self.acl
     }
 }
