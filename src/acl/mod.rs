@@ -86,3 +86,15 @@ impl<'a> Iterator for AccessControlEntries<'a> {
         }
     }
 }
+
+pub struct AccessControlListPtrMut<'a> {
+    acl: AccessControlListPtr<'a>,
+}
+
+impl<'a> AccessControlListPtrMut<'a> {
+    pub unsafe fn new(acl: PACL) -> Self {
+        AccessControlListPtrMut {
+            acl: AccessControlListPtr::new(acl),
+        }
+    }
+}

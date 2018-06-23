@@ -23,7 +23,7 @@ use winapi::um::winnt::{DACL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION};
 
 pub use failure::ResultExt;
 
-pub use acl::{AccessControlEntryPtr, AccessControlListPtr, AccessMask};
+pub use acl::{AccessControlEntryPtr, AccessControlListPtr, AccessControlListPtrMut, AccessMask};
 pub use security_descriptor::SecurityDescriptor;
 pub use sid::SecurityIdPtr;
 
