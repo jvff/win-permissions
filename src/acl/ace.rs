@@ -5,6 +5,22 @@ use winapi::um::winnt::{self, ACE_HEADER, PSID};
 
 use super::super::SecurityIdPtr;
 
+bitflags! {
+    pub struct AccessMask: u32 {
+        const DELETE = winnt::DELETE;
+        const READ_CONTROL = winnt::READ_CONTROL;
+        const WRITE_DAC = winnt::WRITE_DAC;
+        const WRITE_OWNER = winnt::WRITE_OWNER;
+        const SYNCHRONIZE = winnt::SYNCHRONIZE;
+        const ACCESS_SYSTEM_SECURITY = winnt::ACCESS_SYSTEM_SECURITY;
+        const MAXIMUM_ALLOWED = winnt::MAXIMUM_ALLOWED;
+        const GENERIC_ALL = winnt::GENERIC_ALL;
+        const GENERIC_EXECUTE = winnt::GENERIC_EXECUTE;
+        const GENERIC_WRITE = winnt::GENERIC_WRITE;
+        const GENERIC_READ = winnt::GENERIC_READ;
+    }
+}
+
 pub struct AccessControlEntryPtr<'a> {
     ace: AcePtr,
     _ptr_lifetime: PhantomData<&'a ()>,

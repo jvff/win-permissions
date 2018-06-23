@@ -6,4 +6,5 @@ description = "Safe abstraction over Windows ACL interface"
 license = "GPL-3.0"
 
 [dependencies]
+bitflags = "1.0"
 winapi = { version = "0.3", features = ["securitybaseapi", "sddl", "winbase", "winnt"] }

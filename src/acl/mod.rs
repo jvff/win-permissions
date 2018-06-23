@@ -5,7 +5,7 @@ use std::slice;
 
 use winapi::um::winnt::{ACE_HEADER, ACL, PACE_HEADER, PACL};
 
-pub use self::ace::AccessControlEntryPtr;
+pub use self::ace::{AccessControlEntryPtr, AccessMask};
 
 pub struct AccessControlListPtr<'a> {
     acl: PACL,
