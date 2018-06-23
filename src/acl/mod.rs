@@ -1,5 +1,6 @@
 mod ace;
 
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::slice;
 
@@ -101,6 +102,12 @@ impl<'a> AccessControlListPtrMut<'a> {
 
 impl<'a> AsRef<AccessControlListPtr<'a>> for AccessControlListPtrMut<'a> {
     fn as_ref(&self) -> &AccessControlListPtr<'a> {
+        &self.acl
+    }
+}
+
+impl<'a> Borrow<AccessControlListPtr<'a>> for AccessControlListPtrMut<'a> {
+    fn borrow(&self) -> &AccessControlListPtr<'a> {
         &self.acl
     }
 }
