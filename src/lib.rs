@@ -21,6 +21,8 @@ use winapi::um::accctrl::SE_FILE_OBJECT;
 use winapi::um::aclapi::GetNamedSecurityInfoW;
 use winapi::um::winnt::{DACL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION};
 
+pub use failure::ResultExt;
+
 pub use acl::{AccessControlEntryPtr, AccessControlListPtr, AccessMask};
 pub use security_descriptor::SecurityDescriptor;
 pub use sid::SecurityIdPtr;
