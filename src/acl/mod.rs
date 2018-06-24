@@ -183,3 +183,15 @@ impl AsRef<AccessControlListPtr<'static>> for AccessControlList {
         self.acl.as_ref()
     }
 }
+
+impl Borrow<AccessControlListPtrMut<'static>> for AccessControlList {
+    fn borrow(&self) -> &AccessControlListPtrMut<'static> {
+        &self.acl
+    }
+}
+
+impl Borrow<AccessControlListPtr<'static>> for AccessControlList {
+    fn borrow(&self) -> &AccessControlListPtr<'static> {
+        self.acl.as_ref()
+    }
+}
