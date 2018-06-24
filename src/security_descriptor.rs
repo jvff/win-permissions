@@ -1,7 +1,21 @@
+use std::ptr;
+
+use winapi::shared::minwindef::{BOOL, DWORD, FALSE, TRUE};
+use winapi::um::errhandlingapi::GetLastError;
+use winapi::um::securitybaseapi::SetSecurityDescriptorDacl;
 use winapi::um::winbase::LocalFree;
-use winapi::um::winnt::{PSECURITY_DESCRIPTOR, SECURITY_DESCRIPTOR, SE_DACL_PROTECTED};
+use winapi::um::winnt::{PACL, PSECURITY_DESCRIPTOR, SECURITY_DESCRIPTOR, SE_DACL_PROTECTED};
 
 use super::{AccessControlList, AccessControlListPtr, SecurityIdPtr};
+
+#[derive(Debug, Fail)]
+#[fail(
+    display = "Failed to set security descriptor's discretionary access control list. Error code: {}",
+    win_error_code
+)]
+pub struct SetDaclError {
+    win_error_code: DWORD,
+}
 
 enum InternalAclPtr {
     PartOfDescriptor(AccessControlListPtr<'static>),
@@ -68,6 +82,34 @@ impl SecurityDescriptor {
             let security_descriptor = self.security_descriptor as *const SECURITY_DESCRIPTOR;
 
             (*security_descriptor).Control & SE_DACL_PROTECTED != 0
+        }
+    }
+
+    pub fn set_dacl(&mut self, dacl: Option<AccessControlList>) -> Result<(), SetDaclError> {
+        unsafe {
+            if let Some(dacl) = dacl {
+                self.set_dacl_ptr(dacl.as_ptr())?;
+                self.dacl = Some(InternalAclPtr::ExternallyProvided(dacl));
+            } else {
+                self.set_dacl_ptr(ptr::null_mut())?;
+                self.dacl = None;
+            }
+        }
+
+        Ok(())
+    }
+
+    unsafe fn set_dacl_ptr(&mut self, dacl_ptr: PACL) -> Result<(), SetDaclError> {
+        let ptr_is_non_null: BOOL = if dacl_ptr.is_null() { FALSE } else { TRUE };
+
+        let result =
+            SetSecurityDescriptorDacl(self.security_descriptor, ptr_is_non_null, dacl_ptr, TRUE);
+
+        match result {
+            FALSE => Err(SetDaclError {
+                win_error_code: GetLastError(),
+            }),
+            _ => Ok(()),
         }
     }
 }
