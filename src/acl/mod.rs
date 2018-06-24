@@ -171,3 +171,15 @@ impl Drop for AccessControlList {
         }
     }
 }
+
+impl AsRef<AccessControlListPtrMut<'static>> for AccessControlList {
+    fn as_ref(&self) -> &AccessControlListPtrMut<'static> {
+        &self.acl
+    }
+}
+
+impl AsRef<AccessControlListPtr<'static>> for AccessControlList {
+    fn as_ref(&self) -> &AccessControlListPtr<'static> {
+        self.acl.as_ref()
+    }
+}
