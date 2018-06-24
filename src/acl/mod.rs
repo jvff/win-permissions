@@ -50,6 +50,12 @@ impl<'a> AccessControlListPtr<'a> {
     }
 }
 
+impl<'a> AsRef<AccessControlListPtr<'a>> for AccessControlListPtr<'a> {
+    fn as_ref(&self) -> &AccessControlListPtr<'a> {
+        self
+    }
+}
+
 pub struct AccessControlEntries<'a> {
     current_entry: *const ACE_HEADER,
     remaining: usize,
