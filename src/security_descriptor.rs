@@ -1,16 +1,40 @@
 use winapi::um::winbase::LocalFree;
 use winapi::um::winnt::{PSECURITY_DESCRIPTOR, SECURITY_DESCRIPTOR, SE_DACL_PROTECTED};
 
-use super::{AccessControlListPtr, SecurityIdPtr};
+use super::{AccessControlList, AccessControlListPtr, SecurityIdPtr};
+
+enum InternalAclPtr {
+    PartOfDescriptor(AccessControlListPtr<'static>),
+    ExternallyProvided(AccessControlList),
+}
 
 pub struct SecurityDescriptor {
     security_descriptor: PSECURITY_DESCRIPTOR,
+    dacl: Option<InternalAclPtr>,
 }
 
 impl SecurityDescriptor {
     pub unsafe fn new(security_descriptor: PSECURITY_DESCRIPTOR) -> Self {
+        let dacl = Self::extract_dacl(security_descriptor as *const SECURITY_DESCRIPTOR);
+
         SecurityDescriptor {
             security_descriptor,
+            dacl,
+        }
+    }
+
+    unsafe fn extract_dacl(
+        security_descriptor: *const SECURITY_DESCRIPTOR,
+    ) -> Option<InternalAclPtr> {
+        let security_descriptor = security_descriptor as *const SECURITY_DESCRIPTOR;
+        let dacl = (*security_descriptor).Dacl;
+
+        if dacl.is_null() {
+            None
+        } else {
+            Some(InternalAclPtr::PartOfDescriptor(AccessControlListPtr::new(
+                dacl,
+            )))
         }
     }
 
@@ -28,15 +52,14 @@ impl SecurityDescriptor {
     }
 
     pub fn dacl<'a>(&'a self) -> Option<AccessControlListPtr<'a>> {
-        unsafe {
-            let security_descriptor = self.security_descriptor as *const SECURITY_DESCRIPTOR;
-            let dacl = (*security_descriptor).Dacl;
-
-            if dacl.is_null() {
-                None
-            } else {
-                Some(AccessControlListPtr::new(dacl))
-            }
+        match self.dacl {
+            Some(InternalAclPtr::PartOfDescriptor(ref acl)) => unsafe {
+                Some(AccessControlListPtr::new(acl.as_ptr()))
+            },
+            Some(InternalAclPtr::ExternallyProvided(ref acl)) => unsafe {
+                Some(AccessControlListPtr::new(acl.as_ptr()))
+            },
+            None => None,
         }
     }
 
