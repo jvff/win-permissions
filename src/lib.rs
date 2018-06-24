@@ -20,7 +20,10 @@ use winapi::shared::minwindef::DWORD;
 use winapi::shared::winerror::ERROR_SUCCESS;
 use winapi::um::accctrl::SE_FILE_OBJECT;
 use winapi::um::aclapi::{GetNamedSecurityInfoW, SetNamedSecurityInfoW};
-use winapi::um::winnt::{DACL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION};
+use winapi::um::winnt::{
+    DACL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION, PACL,
+    PROTECTED_DACL_SECURITY_INFORMATION,
+};
 
 pub use failure::ResultExt;
 
@@ -48,6 +51,9 @@ pub struct SetDaclError {
 pub trait PathExt {
     fn security_information(&self) -> Result<SecurityDescriptor, GetSecurityInformationError>;
     fn set_dacl<'a, A>(&self, dacl: A) -> Result<(), SetDaclError>
+    where
+        A: Borrow<AccessControlListPtr<'a>>;
+    fn set_protected_dacl<'a, A>(&self, dacl: A) -> Result<(), SetDaclError>
     where
         A: Borrow<AccessControlListPtr<'a>>;
 }
@@ -92,30 +98,47 @@ where
     where
         A: Borrow<AccessControlListPtr<'a>>,
     {
-        let mut file_path: Vec<u16> = self
-            .as_ref()
-            .as_os_str()
-            .encode_wide()
-            .chain(once(0))
-            .collect();
+        unsafe { set_dacl_of_path(self, dacl.borrow().as_ptr(), false) }
+    }
 
-        unsafe {
-            let dacl_ptr = dacl.borrow().as_ptr();
+    fn set_protected_dacl<'a, A>(&self, dacl: A) -> Result<(), SetDaclError>
+    where
+        A: Borrow<AccessControlListPtr<'a>>,
+    {
+        unsafe { set_dacl_of_path(self, dacl.borrow().as_ptr(), true) }
+    }
+}
 
-            let result = SetNamedSecurityInfoW(
-                file_path.as_mut_ptr(),
-                SE_FILE_OBJECT,
-                DACL_SECURITY_INFORMATION,
-                ptr::null_mut(),
-                ptr::null_mut(),
-                dacl_ptr,
-                ptr::null_mut(),
-            );
+unsafe fn set_dacl_of_path<P: AsRef<Path>>(
+    path: &P,
+    dacl_ptr: PACL,
+    disable_inheritance: bool,
+) -> Result<(), SetDaclError> {
+    let mut file_path: Vec<u16> = path
+        .as_ref()
+        .as_os_str()
+        .encode_wide()
+        .chain(once(0))
+        .collect();
 
-            match result {
-                ERROR_SUCCESS => Ok(()),
-                win_error_code => Err(SetDaclError { win_error_code }),
-            }
-        }
+    let mut flags = DACL_SECURITY_INFORMATION;
+
+    if disable_inheritance {
+        flags |= PROTECTED_DACL_SECURITY_INFORMATION;
+    }
+
+    let result = SetNamedSecurityInfoW(
+        file_path.as_mut_ptr(),
+        SE_FILE_OBJECT,
+        flags,
+        ptr::null_mut(),
+        ptr::null_mut(),
+        dacl_ptr,
+        ptr::null_mut(),
+    );
+
+    match result {
+        ERROR_SUCCESS => Ok(()),
+        win_error_code => Err(SetDaclError { win_error_code }),
     }
 }
