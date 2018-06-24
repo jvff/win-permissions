@@ -195,3 +195,11 @@ impl Borrow<AccessControlListPtr<'static>> for AccessControlList {
         self.acl.as_ref()
     }
 }
+
+impl Deref for AccessControlList {
+    type Target = AccessControlListPtrMut<'static>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.acl
+    }
+}
