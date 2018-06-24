@@ -3,9 +3,11 @@ mod ace;
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::ops::Deref;
-use std::{mem, slice};
+use std::{mem, ptr, slice};
 
 use winapi::shared::minwindef::{DWORD, FALSE};
+use winapi::shared::winerror::ERROR_SUCCESS;
+use winapi::um::aclapi::SetEntriesInAclW;
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::minwinbase::LPTR;
 use winapi::um::securitybaseapi::InitializeAcl;
@@ -158,6 +160,28 @@ impl AccessControlList {
             if init_result == FALSE {
                 return Err(CreateAclError {
                     win_error_code: GetLastError(),
+                });
+            }
+
+            let acl = AccessControlListPtrMut::new(acl_ptr);
+
+            Ok(AccessControlList { acl })
+        }
+    }
+
+    pub fn clone_from<'a, T>(template_acl: T) -> Result<Self, CreateAclError>
+    where
+        T: AsRef<AccessControlListPtr<'a>>,
+    {
+        let mut acl_ptr = ptr::null_mut();
+
+        unsafe {
+            let template_acl_ptr = template_acl.as_ref().as_ptr();
+
+            let result = SetEntriesInAclW(0, ptr::null_mut(), template_acl_ptr, &mut acl_ptr);
+            if result != ERROR_SUCCESS {
+                return Err(CreateAclError {
+                    win_error_code: result,
                 });
             }
 
