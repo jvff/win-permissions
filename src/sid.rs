@@ -57,3 +57,9 @@ impl<'a> Display for SecurityIdPtr<'a> {
         }
     }
 }
+
+impl<'a> AsRef<SecurityIdPtr<'a>> for SecurityIdPtr<'a> {
+    fn as_ref(&self) -> &SecurityIdPtr<'a> {
+        self
+    }
+}
