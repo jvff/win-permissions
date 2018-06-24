@@ -50,6 +50,10 @@ impl<'a> AccessControlListPtr<'a> {
     pub unsafe fn as_ptr(&self) -> PACL {
         self.acl
     }
+
+    pub fn try_to_owned(&self) -> Result<AccessControlList, CreateAclError> {
+        AccessControlList::clone_from(self)
+    }
 }
 
 impl<'a> AsRef<AccessControlListPtr<'a>> for AccessControlListPtr<'a> {
