@@ -3,9 +3,14 @@ mod ace;
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::ops::Deref;
-use std::slice;
+use std::{mem, slice};
 
-use winapi::um::winnt::{ACE_HEADER, ACL, PACE_HEADER, PACL};
+use winapi::shared::minwindef::{DWORD, FALSE};
+use winapi::um::errhandlingapi::GetLastError;
+use winapi::um::minwinbase::LPTR;
+use winapi::um::securitybaseapi::InitializeAcl;
+use winapi::um::winbase::{LocalAlloc, LocalFree};
+use winapi::um::winnt::{ACE_HEADER, ACL, ACL_REVISION, PACE_HEADER, PACL};
 
 pub use self::ace::{AccessControlEntryPtr, AccessMask};
 
@@ -118,5 +123,51 @@ impl<'a> Deref for AccessControlListPtrMut<'a> {
 
     fn deref(&self) -> &Self::Target {
         &self.acl
+    }
+}
+
+#[derive(Debug, Fail)]
+#[fail(display = "Failed to create empty access control list. Error code: {}", win_error_code)]
+pub struct CreateAclError {
+    win_error_code: DWORD,
+}
+
+pub struct AccessControlList {
+    acl: AccessControlListPtrMut<'static>,
+}
+
+impl AccessControlList {
+    pub fn new() -> Result<Self, CreateAclError> {
+        unsafe {
+            let acl_size = mem::size_of::<ACL>();
+
+            let acl_ptr = LocalAlloc(LPTR, acl_size) as PACL;
+            if acl_ptr.is_null() {
+                return Err(CreateAclError {
+                    win_error_code: GetLastError(),
+                });
+            }
+
+            let init_result = InitializeAcl(acl_ptr, acl_size as u32, ACL_REVISION as u32);
+            if init_result == FALSE {
+                return Err(CreateAclError {
+                    win_error_code: GetLastError(),
+                });
+            }
+
+            let acl = AccessControlListPtrMut::new(acl_ptr);
+
+            Ok(AccessControlList { acl })
+        }
+    }
+}
+
+impl Drop for AccessControlList {
+    fn drop(&mut self) {
+        unsafe {
+            if !LocalFree(self.acl.as_ptr() as *mut _).is_null() {
+                panic!("Failed to deallocate access control list");
+            }
+        }
     }
 }
