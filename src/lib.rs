@@ -29,7 +29,7 @@ pub use failure::ResultExt;
 
 pub use acl::{
     AccessControlEntryPtr, AccessControlList, AccessControlListPtr, AccessControlListPtrMut,
-    AccessMask, AccessMode, CreateAclError,
+    AccessInheritance, AccessMask, AccessMode, CreateAclError,
 };
 pub use security_descriptor::SecurityDescriptor;
 pub use sid::{CreateSecurityIdError, SecurityId, SecurityIdPtr};

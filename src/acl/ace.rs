@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use winapi::shared::minwindef::DWORD;
+use winapi::um::accctrl;
 use winapi::um::winnt::{self, ACE_HEADER, PSID};
 
 use super::super::SecurityIdPtr;
@@ -18,6 +19,20 @@ bitflags! {
         const GENERIC_EXECUTE = winnt::GENERIC_EXECUTE;
         const GENERIC_WRITE = winnt::GENERIC_WRITE;
         const GENERIC_READ = winnt::GENERIC_READ;
+    }
+}
+
+bitflags! {
+    pub struct AccessInheritance: u32 {
+        const CONTAINERS_INHERIT = winnt::CONTAINER_INHERIT_ACE as u32;
+        const INHERIT_ONLY = winnt::INHERIT_ONLY_ACE as u32;
+        const DONT_PROPAGATE = winnt::NO_PROPAGATE_INHERIT_ACE as u32;
+        const OBJECTS_INHERIT = winnt::OBJECT_INHERIT_ACE as u32;
+
+        const CONTAINERS_AND_OBJECTS_INHERIT = accctrl::SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        const NO_INHERITANCE = accctrl::NO_INHERITANCE;
+        const ONLY_CONTAINERS_INHERIT = accctrl::SUB_CONTAINERS_ONLY_INHERIT;
+        const ONLY_OBJECTS_INHERIT = accctrl::SUB_OBJECTS_ONLY_INHERIT;
     }
 }
 
