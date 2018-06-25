@@ -32,6 +32,10 @@ impl<'a> SecurityIdPtr<'a> {
     pub fn is_well_known(&self, well_known_sid_type: WELL_KNOWN_SID_TYPE) -> bool {
         unsafe { IsWellKnownSid(self.sid, well_known_sid_type) != 0 }
     }
+
+    pub unsafe fn as_ptr(&self) -> PSID {
+        self.sid
+    }
 }
 
 impl<'a> Display for SecurityIdPtr<'a> {
