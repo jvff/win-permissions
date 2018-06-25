@@ -14,7 +14,9 @@ use winapi::um::securitybaseapi::InitializeAcl;
 use winapi::um::winbase::{LocalAlloc, LocalFree};
 use winapi::um::winnt::{ACE_HEADER, ACL, ACL_REVISION, PACE_HEADER, PACL};
 
-pub use self::ace::{AccessControlEntryPtr, AccessInheritance, AccessMask, AccessMode};
+pub use self::ace::{
+    AccessControlEntryPtr, AccessInheritance, AccessMask, AccessMode, ExplicitAccess,
+};
 
 pub struct AccessControlListPtr<'a> {
     acl: PACL,

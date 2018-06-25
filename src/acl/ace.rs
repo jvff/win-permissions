@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
+use std::ptr;
 
 use winapi::shared::minwindef::DWORD;
-use winapi::um::accctrl;
+use winapi::um::accctrl::{self, EXPLICIT_ACCESS_W, TRUSTEE_W};
 use winapi::um::winnt::{self, ACE_HEADER, PSID};
 
 use super::super::SecurityIdPtr;
@@ -175,6 +176,36 @@ impl<'a> AccessControlEntryPtr<'a> {
             };
 
             header.AceSize as usize
+        }
+    }
+}
+
+pub struct ExplicitAccess<'trustee> {
+    explicit_access: EXPLICIT_ACCESS_W,
+    _trustee_lifetime: PhantomData<&'trustee ()>,
+}
+
+impl<'trustee> ExplicitAccess<'trustee> {
+    pub fn new<T: AsRef<SecurityIdPtr<'trustee>>>(
+        permissions: AccessMask,
+        mode: AccessMode,
+        inheritance: AccessInheritance,
+        trustee: T,
+    ) -> Self {
+        ExplicitAccess {
+            explicit_access: EXPLICIT_ACCESS_W {
+                grfAccessPermissions: permissions.bits(),
+                grfAccessMode: mode as u32,
+                grfInheritance: inheritance.bits(),
+                Trustee: TRUSTEE_W {
+                    pMultipleTrustee: ptr::null_mut(),
+                    MultipleTrusteeOperation: accctrl::NO_MULTIPLE_TRUSTEE,
+                    TrusteeForm: accctrl::TRUSTEE_IS_SID,
+                    TrusteeType: accctrl::TRUSTEE_IS_UNKNOWN,
+                    ptstrName: unsafe { trustee.as_ref().as_ptr() as *mut _ },
+                },
+            },
+            _trustee_lifetime: PhantomData,
         }
     }
 }
