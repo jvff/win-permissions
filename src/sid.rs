@@ -147,3 +147,9 @@ impl Deref for SecurityId {
         &self.sid
     }
 }
+
+impl Display for SecurityId {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
+        self.as_ref().fmt(formatter)
+    }
+}
