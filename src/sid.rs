@@ -125,3 +125,9 @@ impl Drop for SecurityId {
         }
     }
 }
+
+impl AsRef<SecurityIdPtr<'static>> for SecurityId {
+    fn as_ref(&self) -> &SecurityIdPtr<'static> {
+        &self.sid
+    }
+}
