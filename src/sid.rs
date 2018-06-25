@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::ffi::CStr;
 use std::fmt::{self, Display, Formatter};
 use std::marker::PhantomData;
@@ -128,6 +129,12 @@ impl Drop for SecurityId {
 
 impl AsRef<SecurityIdPtr<'static>> for SecurityId {
     fn as_ref(&self) -> &SecurityIdPtr<'static> {
+        &self.sid
+    }
+}
+
+impl Borrow<SecurityIdPtr<'static>> for SecurityId {
+    fn borrow(&self) -> &SecurityIdPtr<'static> {
         &self.sid
     }
 }
