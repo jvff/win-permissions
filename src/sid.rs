@@ -2,6 +2,7 @@ use std::borrow::Borrow;
 use std::ffi::CStr;
 use std::fmt::{self, Display, Formatter};
 use std::marker::PhantomData;
+use std::ops::Deref;
 use std::ptr;
 
 use winapi::shared::minwindef::{DWORD, FALSE};
@@ -135,6 +136,14 @@ impl AsRef<SecurityIdPtr<'static>> for SecurityId {
 
 impl Borrow<SecurityIdPtr<'static>> for SecurityId {
     fn borrow(&self) -> &SecurityIdPtr<'static> {
+        &self.sid
+    }
+}
+
+impl Deref for SecurityId {
+    type Target = SecurityIdPtr<'static>;
+
+    fn deref(&self) -> &Self::Target {
         &self.sid
     }
 }
