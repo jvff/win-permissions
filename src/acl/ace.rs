@@ -21,6 +21,17 @@ bitflags! {
     }
 }
 
+#[repr(u32)]
+pub enum AccessMode {
+    NotUsed = 0,
+    GrantAccess,
+    SetAccess,
+    DenyAccess,
+    RevokeAccess,
+    SetAuditSuccess,
+    SetAuditFailure,
+}
+
 pub struct AccessControlEntryPtr<'a> {
     ace: AcePtr,
     _ptr_lifetime: PhantomData<&'a ()>,
