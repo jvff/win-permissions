@@ -32,7 +32,7 @@ pub use acl::{
     AccessMask, CreateAclError,
 };
 pub use security_descriptor::SecurityDescriptor;
-pub use sid::SecurityIdPtr;
+pub use sid::{CreateSecurityIdError, SecurityId, SecurityIdPtr};
 
 #[derive(Debug, Fail)]
 #[fail(display = "Failed to get security information. Error code: {}", win_error_code)]
