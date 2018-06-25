@@ -7,6 +7,7 @@ use std::{mem, ptr, slice};
 
 use winapi::shared::minwindef::{DWORD, FALSE};
 use winapi::shared::winerror::ERROR_SUCCESS;
+use winapi::um::accctrl::PEXPLICIT_ACCESS_W;
 use winapi::um::aclapi::SetEntriesInAclW;
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::minwinbase::LPTR;
@@ -179,22 +180,42 @@ impl AccessControlList {
     where
         T: AsRef<AccessControlListPtr<'a>>,
     {
+        unsafe { Self::create_acl(template_acl.as_ref().as_ptr(), 0, ptr::null_mut()) }
+    }
+
+    pub fn insert<'trustee>(
+        &mut self,
+        explicit_entry: ExplicitAccess<'trustee>,
+    ) -> Result<(), CreateAclError> {
+        let updated_acl = unsafe { Self::create_acl(self.as_ptr(), 1, explicit_entry.as_ptr())? };
+
+        mem::replace(self, updated_acl);
+
+        Ok(())
+    }
+
+    unsafe fn create_acl(
+        template_acl_ptr: PACL,
+        extra_entries_count: u32,
+        extra_entries_ptr: PEXPLICIT_ACCESS_W,
+    ) -> Result<Self, CreateAclError> {
         let mut acl_ptr = ptr::null_mut();
 
-        unsafe {
-            let template_acl_ptr = template_acl.as_ref().as_ptr();
-
-            let result = SetEntriesInAclW(0, ptr::null_mut(), template_acl_ptr, &mut acl_ptr);
-            if result != ERROR_SUCCESS {
-                return Err(CreateAclError {
-                    win_error_code: result,
-                });
-            }
-
-            let acl = AccessControlListPtrMut::new(acl_ptr);
-
-            Ok(AccessControlList { acl })
+        let result = SetEntriesInAclW(
+            extra_entries_count,
+            extra_entries_ptr,
+            template_acl_ptr,
+            &mut acl_ptr,
+        );
+        if result != ERROR_SUCCESS {
+            return Err(CreateAclError {
+                win_error_code: result,
+            });
         }
+
+        let acl = AccessControlListPtrMut::new(acl_ptr);
+
+        Ok(AccessControlList { acl })
     }
 }
 
