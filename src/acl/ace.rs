@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::ptr;
 
 use winapi::shared::minwindef::DWORD;
-use winapi::um::accctrl::{self, EXPLICIT_ACCESS_W, TRUSTEE_W};
+use winapi::um::accctrl::{self, EXPLICIT_ACCESS_W, PEXPLICIT_ACCESS_W, TRUSTEE_W};
 use winapi::um::winnt::{self, ACE_HEADER, PSID};
 
 use super::super::SecurityIdPtr;
@@ -207,5 +207,9 @@ impl<'trustee> ExplicitAccess<'trustee> {
             },
             _trustee_lifetime: PhantomData,
         }
+    }
+
+    pub unsafe fn as_ptr(&self) -> PEXPLICIT_ACCESS_W {
+        (&self.explicit_access as *const EXPLICIT_ACCESS_W) as PEXPLICIT_ACCESS_W
     }
 }
